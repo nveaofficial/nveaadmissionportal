@@ -1,0 +1,8 @@
+{
+  "name": "NVEA Online Admission Portal",
+  "description": "NVEA's Official Admission Portal for prospective students to apply for enrollment and track their application status online.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
