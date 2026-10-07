@@ -42,58 +42,58 @@ const STATIC_FORM_BLOCKS: Array<{
   {
     id: 'block-resident-info',
     portalId: 2,
-    questionNumber: 21,
+    questionNumber: 24,
     title: 'Resident Information (निवास स्थान संबंधी विवरण)',
     text: 'Resident Information निवास स्थान संबंधी विवरण स्थायी अथवा वर्तमान लोकैशन lgdirectory.gov.in',
-    selector: '#question-box-21',
+    selector: '#question-box-24',
   },
   {
     id: 'block-bank-qr',
     portalId: 9,
-    questionNumber: 110,
-    title: 'Official Beneficiary Bank & QR Legal Notice (Q110)',
+    questionNumber: 113,
+    title: 'Official Beneficiary Bank & QR Legal Notice (Q113)',
     text: 'NAND VIDHYA EDUCATION ACADEMY NVEA चालू बैंक खाता संख्या 104321010000244 IFSC UBIN0910431 Union Bank of India UPI ID 72923201@ubin QR Code',
-    selector: '#question-box-110',
+    selector: '#question-box-113',
   },
   {
     id: 'block-live-fee',
     portalId: 9,
-    questionNumber: 116,
-    title: 'Live Fee Status (Q116–Q117)',
+    questionNumber: 119,
+    title: 'Live Fee Status (Q119–Q120)',
     text: 'Live Fee Status कितनी फीस जमा है कितनी बकाया है उसका विवरण भरो Deposited Fee Outstanding Fee',
-    selector: '#question-box-116',
+    selector: '#question-box-119',
   },
   {
     id: 'block-oath-intro',
     portalId: 10,
-    questionNumber: 118,
+    questionNumber: 121,
     title: '1. Oath Declaration Portal (आधिकारिक डिजिटल शपथ पत्र)',
     text: 'Oath Declaration Portal आधिकारिक डिजिटल शपथ पत्र भारतीय वयस्कता अधिनियम 1875 भारतीय अनुबंध अधिनियम 1872 भारतीय साक्ष्य अधिनियम सूचना प्रौद्योगिकी अधिनियम 2000',
-    selector: '#question-box-118',
+    selector: '#question-box-121',
   },
   {
     id: 'block-oath-sec1-2',
     portalId: 10,
-    questionNumber: 129,
+    questionNumber: 132,
     title: 'शपथ बयान: 1. संस्थान संबंधी सत्यापन एवं 2. नामांकन स्थिति और सीमा',
     text: 'शपथ बयान संस्थान संबंधी सत्यापन नामांकन स्थिति और सीमा भारतीय शपथ अधिनियम 1969 CLAP Course Class Program',
-    selector: '#question-box-129',
+    selector: '#question-box-132',
   },
   {
     id: 'block-statutory-notice',
     portalId: 10,
-    questionNumber: 135,
+    questionNumber: 138,
     title: 'विधिक अधिसूचना / STATUTORY NOTICE (Maximum Intake Limit)',
     text: 'विधिक अधिसूचना STATUTORY NOTICE प्रचलित बैच में लर्नर्स की अधिकतम संख्या की सीमा Maximum Intake Limit 20 Learners',
-    selector: '#question-box-135',
+    selector: '#question-box-138',
   },
   {
     id: 'block-oath-clauses',
     portalId: 10,
-    questionNumber: 170,
+    questionNumber: 173,
     title: 'विस्तृत विधिक घोषणा एवं शपथपत्र (Clauses 3 to 19 & Unconditional Legal Declaration)',
     text: 'अविचलनीय विधिक घोषणा एवं शपथपत्र UNCONDITIONAL LEGAL DECLARATION AFFIDAVIT Download Consent Certificate Indian Contract Act Evidence Act IT Act IPC Contempt of Court Act',
-    selector: '#question-box-170',
+    selector: '#question-box-173',
   },
 ];
 
@@ -587,7 +587,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
 
           {results.length === 0 ? (
             <div className="p-5 text-center text-xs sm:text-sm text-slate-600">
-              No matching content found for <strong>&ldquo;{query.trim()}&rdquo;</strong>. Try another keyword, question number (1–172), option, or phrase.
+              No matching content found for <strong>&ldquo;{query.trim()}&rdquo;</strong>. Try another keyword, question number (1–175), option, or phrase.
             </div>
           ) : (
             <div className="divide-y divide-slate-200">

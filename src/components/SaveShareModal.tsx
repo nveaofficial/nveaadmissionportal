@@ -12,7 +12,9 @@ import {
   ExternalLink,
   Mail,
   RefreshCw,
+  Cloud,
 } from 'lucide-react';
+import { User } from 'firebase/auth';
 
 export interface SavedFormSummary {
   formId: string;
@@ -39,6 +41,8 @@ interface SaveShareModalProps {
   onDownloadPdf: () => Promise<void>;
   onSharePdfOrLinkWhatsApp: () => Promise<void>;
   isGeneratingPdf: boolean;
+  firebaseUser?: User | null;
+  onSignInWithGoogle?: () => Promise<User | null>;
 }
 
 export const SaveShareModal: React.FC<SaveShareModalProps> = ({
@@ -57,6 +61,8 @@ export const SaveShareModal: React.FC<SaveShareModalProps> = ({
   onDownloadPdf,
   onSharePdfOrLinkWhatsApp,
   isGeneratingPdf,
+  firebaseUser,
+  onSignInWithGoogle,
 }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);

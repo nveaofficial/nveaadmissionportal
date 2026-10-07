@@ -650,7 +650,11 @@ export const Q170ConsentAffidavitDescriptionBlock: React.FC<Q170ConsentAffidavit
   </div>
 </body>
 </html>`;
-    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+    const minifiedHtml = htmlContent
+      .replace(/>\s+([<])/g, '>$1')
+      .replace(/([>])\s+</g, '$1<')
+      .trim();
+    const blob = new Blob([minifiedHtml], { type: 'text/html;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;

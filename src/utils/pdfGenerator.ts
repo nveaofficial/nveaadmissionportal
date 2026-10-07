@@ -1,6 +1,11 @@
 import { jsPDF } from 'jspdf';
 import { PORTALS, QUESTIONS, QuestionItem, isQuestionRequired } from '../data/formSchema';
 import { UploadedFileItem } from '../components/DocumentUploadField';
+import {
+  extractVerificationPayload,
+  generateAdmissionConfirmedSealPng,
+  generateAdmissionQrDataUrl,
+} from './verificationUtils';
 
 export interface PdfGenerationInput {
   recordNumber: string;
@@ -375,25 +380,25 @@ export async function generateAdmissionFormPdf(
 
     for (const q of filledPortalQuestions) {
       // Exact Pre-Question Sub-Section Notices in strict sequence (only when a question in that sub-section is filled)
-      if (!drewResidentBanner && q.number >= 21 && q.number <= 35) {
+      if (!drewResidentBanner && q.number >= 24 && q.number <= 38) {
         drewResidentBanner = true;
         drawSubSectionBanner('Resident Information (निवास स्थान संबंधी विवरण)', [
           'इस भाग में विद्यार्थी/शिक्षार्थी/क्लाइंट सिर्फ अपने आवेदन से संबंधित स्थायी अथवा वर्तमान लोकैशन के बारे मे आवश्यक जानकारी साँझा करे। आधिकारिक सरकारी डायरेक्टरी: https://lgdirectory.gov.in/',
         ]);
       }
-      if (!drewLiveFeeBanner && q.number >= 116 && q.number <= 117) {
+      if (!drewLiveFeeBanner && q.number >= 119 && q.number <= 120) {
         drewLiveFeeBanner = true;
         drawSubSectionBanner('Live Fee Status', [
           'कितनी फीस जमा है कितनी बकाया है उसका विवरण भरो।',
         ]);
       }
-      if (!drewOathIntroBanner && q.number >= 118 && q.number <= 128) {
+      if (!drewOathIntroBanner && q.number >= 121 && q.number <= 131) {
         drewOathIntroBanner = true;
         drawSubSectionBanner('1. Oath Declaration Portal (आधिकारिक डिजिटल शपथ पत्र)', [
           'यदि नामांकित/शपथकर्ता की आयु 18 वर्ष से कम है, तो यह शपथ/घोषणा केवल उसके वैध अभिभावक द्वारा भारतीय वयस्कता अधिनियम, 1875 की धारा 3 तथा भारतीय अनुबंध अधिनियम, 1872 की धारा 10 के अंतर्गत स्वीकार्य होगी। यदि आयु 18 वर्ष या अधिक है, तो वह स्वयं भारतीय साक्ष्य अधिनियम, 1872 व सूचना प्रौद्योगिकी अधिनियम, 2000 के अंतर्गत इसे प्रमाणित करेगा/करेगी।',
         ]);
       }
-      if (!drewOathSec12Banner && q.number >= 129 && q.number <= 134) {
+      if (!drewOathSec12Banner && q.number >= 132 && q.number <= 137) {
         drewOathSec12Banner = true;
         drawSubSectionBanner(
           'शपथ बयान: 1. संस्थान संबंधी सत्यापन एवं 2. नामांकन स्थिति और सीमा',
@@ -403,7 +408,7 @@ export async function generateAdmissionFormPdf(
           ]
         );
       }
-      if (!drewStatutoryBanner && q.number >= 135 && q.number <= 169) {
+      if (!drewStatutoryBanner && q.number >= 138 && q.number <= 172) {
         drewStatutoryBanner = true;
         drawSubSectionBanner(
           'विधिक अधिसूचना / STATUTORY NOTICE: प्रचलित बैच में लर्नर्स की अधिकतम संख्या की सीमा (Maximum Intake Limit)',
@@ -413,7 +418,7 @@ export async function generateAdmissionFormPdf(
           '#FFFBEB'
         );
       }
-      if (!drewClausesBanner && q.number === 170) {
+      if (!drewClausesBanner && q.number === 173) {
         drewClausesBanner = true;
         drawSubSectionBanner(
           'विस्तृत विधिक घोषणा एवं शर्तें (Clauses 3 to 19) एवं अंतिम सहमति-पत्र (Affidavit)',
@@ -609,6 +614,107 @@ export async function generateAdmissionFormPdf(
     }
 
     curY += 6;
+  }
+
+  // Draw Official Admission Confirmation Seal & QR Code if OTP Verified
+  const isOtpVerified =
+    typeof input.answers.q171 === 'string' &&
+    input.answers.q171.startsWith('Consent Verified / Approved');
+
+  if (isOtpVerified) {
+    const vPayload = extractVerificationPayload(input.recordNumber, input.answers, input.formattedDate);
+    const sealDataUrl = generateAdmissionConfirmedSealPng(vPayload);
+    const qrDataUrl = await generateAdmissionQrDataUrl(vPayload);
+    const [sealImg, vQrImg] = await Promise.all([
+      loadImage(sealDataUrl),
+      loadImage(qrDataUrl),
+    ]);
+
+    const summaryRows = vPayload.summaryIdentifiers;
+    const half = Math.ceil(summaryRows.length / 2);
+    const leftRows = summaryRows.slice(0, half);
+    const rightRows = summaryRows.slice(half);
+
+    const maxRows = Math.max(leftRows.length, rightRows.length);
+    const certBlockH = Math.max(285, 48 + maxRows * 20);
+    ensureSpace(certBlockH + 16);
+
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(MARGIN_X, curY, CONTENT_W, certBlockH);
+    ctx.strokeStyle = '#047857';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(MARGIN_X, curY, CONTENT_W, certBlockH);
+
+    // Top Header Bar of Verified Admission Record Summary
+    ctx.fillStyle = '#0F2942';
+    ctx.fillRect(MARGIN_X, curY, CONTENT_W, 36);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 14px "Plus Jakarta Sans", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('✓ VERIFIED ADMISSION RECORD SUMMARY', MARGIN_X + 16, curY + 23);
+
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#FBBF24';
+    ctx.font = 'bold 12.5px "JetBrains Mono", monospace';
+    ctx.fillText(
+      `INTERVIEW S. NO: ${vPayload.interviewSerialNumber || '—'}`,
+      MARGIN_X + CONTENT_W - 16,
+      curY + 23
+    );
+    ctx.textAlign = 'left';
+
+    // Left Column: First half of summary records in proper sequence
+    let leftY = curY + 56;
+    leftRows.forEach((row) => {
+      ctx.fillStyle = '#475569';
+      ctx.font = 'bold 11px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText(`${row.label}:`, MARGIN_X + 14, leftY);
+
+      ctx.fillStyle = row.label.includes('Status') ? '#065F46' : '#0F2942';
+      ctx.font = 'bold 11px "JetBrains Mono", monospace';
+      ctx.fillText(String(row.value), MARGIN_X + 205, leftY);
+      leftY += 20;
+    });
+
+    // Center Column: Round Seal + Logo + QR Code (Symmetrical Center)
+    const centerX = MARGIN_X + CONTENT_W / 2;
+
+    // 1. Logo at top of center column
+    if (logoImg) {
+      ctx.drawImage(logoImg, centerX - 22, curY + 44, 44, 44);
+    }
+
+    // 2. Round Verification Seal in middle
+    if (sealImg) {
+      ctx.drawImage(sealImg, centerX - 54, curY + 94, 108, 108);
+    }
+
+    // 3. Official 17-Point Verification QR at bottom
+    if (vQrImg) {
+      const qrBoxSize = 74;
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(centerX - qrBoxSize / 2, curY + 206, qrBoxSize, qrBoxSize);
+      ctx.strokeStyle = '#CBD5E1';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(centerX - qrBoxSize / 2, curY + 206, qrBoxSize, qrBoxSize);
+      ctx.drawImage(vQrImg, centerX - qrBoxSize / 2 + 2, curY + 208, qrBoxSize - 4, qrBoxSize - 4);
+    }
+
+    // Right Column: Remaining half of summary records in proper sequence
+    const rightColX = MARGIN_X + CONTENT_W - 410;
+    let rightY = curY + 56;
+    rightRows.forEach((row) => {
+      ctx.fillStyle = '#475569';
+      ctx.font = 'bold 11px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText(`${row.label}:`, rightColX, rightY);
+
+      ctx.fillStyle = row.label.includes('Status') ? '#065F46' : '#0F2942';
+      ctx.font = 'bold 11px "JetBrains Mono", monospace';
+      ctx.fillText(String(row.value), rightColX + 195, rightY);
+      rightY += 20;
+    });
+
+    curY += certBlockH + 12;
   }
 
   // Stamp Footer with Page X of Y on all pages and assemble PDF

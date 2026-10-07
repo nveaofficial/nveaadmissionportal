@@ -1,0 +1,160 @@
+{
+  "entities": {
+    "user": {
+      "title": "User Profile",
+      "description": "Authenticated user profile for admission portal users",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Firebase Auth user UID"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "User email address"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "User display name"
+        },
+        "photoURL": {
+          "type": "string",
+          "description": "User avatar profile image URL"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp of user creation"
+        },
+        "lastLoginAt": {
+          "type": "string",
+          "description": "ISO timestamp of last sign in"
+        }
+      },
+      "required": ["id", "email", "createdAt"]
+    },
+    "savedForm": {
+      "title": "Saved Admission Form",
+      "description": "Admission form application state saved by the user",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique form document ID"
+        },
+        "userId": {
+          "type": "string",
+          "description": "Owner user UID"
+        },
+        "recordNumber": {
+          "type": "string",
+          "description": "Official admission record number"
+        },
+        "applicantName": {
+          "type": "string",
+          "description": "Name of applicant"
+        },
+        "answersJson": {
+          "type": "string",
+          "description": "Serialized JSON string of filled form question answers"
+        },
+        "uploadedFilesJson": {
+          "type": "string",
+          "description": "Serialized JSON string of uploaded documents metadata and files"
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of application",
+          "enum": ["draft", "submitted", "verified"]
+        },
+        "submitted": {
+          "type": "boolean",
+          "description": "Whether the form is submitted"
+        },
+        "submittedAt": {
+          "type": "string",
+          "description": "ISO timestamp when submitted"
+        },
+        "savedAt": {
+          "type": "string",
+          "description": "ISO timestamp when saved"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp of form creation"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "ISO timestamp of last update"
+        }
+      },
+      "required": ["id", "userId", "recordNumber", "createdAt", "updatedAt"]
+    },
+    "verificationRecord": {
+      "title": "Admission Verification Record",
+      "description": "OTP verified admission record snapshot",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique verification document ID"
+        },
+        "userId": {
+          "type": "string",
+          "description": "User UID who completed verification"
+        },
+        "recordNumber": {
+          "type": "string",
+          "description": "Official record number"
+        },
+        "verificationId": {
+          "type": "string",
+          "description": "Unique OTP verification reference ID"
+        },
+        "applicantName": {
+          "type": "string",
+          "description": "Applicant full name"
+        },
+        "interviewSerialNumber": {
+          "type": "string",
+          "description": "Question 43 interview serial number"
+        },
+        "verifiedContact": {
+          "type": "string",
+          "description": "Contact or Gmail address used for OTP verification"
+        },
+        "verifiedAt": {
+          "type": "string",
+          "description": "ISO timestamp of verification"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp of creation"
+        }
+      },
+      "required": ["id", "userId", "recordNumber", "verificationId", "verifiedAt"]
+    }
+  },
+  "firestore": {
+    "/forms/{formId}": {
+      "schema": "savedForm",
+      "description": "Admission forms saved or submitted to the database"
+    },
+    "/verifications/{verificationId}": {
+      "schema": "verificationRecord",
+      "description": "Official admission verification records"
+    },
+    "/users/{userId}": {
+      "schema": "user",
+      "description": "User profile documents stored by Firebase Auth UID"
+    },
+    "/users/{userId}/forms/{formId}": {
+      "schema": "savedForm",
+      "description": "Admission forms owned and saved by the user"
+    },
+    "/users/{userId}/verifications/{verificationId}": {
+      "schema": "verificationRecord",
+      "description": "OTP verified admission records owned by the user"
+    }
+  }
+}

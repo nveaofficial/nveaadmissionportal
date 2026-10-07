@@ -11,8 +11,8 @@ export type QuestionInputType =
 export type FilePreviewFrameType = 'photo' | 'signature' | 'aadhaar_half' | 'a4_full';
 
 export interface QuestionItem {
-  number: number; // 1 to 172
-  id: string; // 'q1' to 'q172'
+  number: number; // 1 to 175
+  id: string; // internal field ID
   portalId: number; // 1 to 10
   label: string;
   description?: string;
@@ -22,9 +22,9 @@ export interface QuestionItem {
   placeholder?: string;
   fileFrameType?: FilePreviewFrameType;
   colSpan?: 1 | 2 | 3 | 4; // Grid span in compact institutional layout
-  hasBankLegalNoticeAndQr?: boolean; // Q110
-  hasConsentAffidavitBlock?: boolean; // Q170
-  readOnlyAutoCalc?: boolean; // Strictly auto-calculated field (Q97, Q103, Q106, Q107, Q117)
+  hasBankLegalNoticeAndQr?: boolean; // Q113 (old Q110)
+  hasConsentAffidavitBlock?: boolean; // Q173 (old Q170)
+  readOnlyAutoCalc?: boolean; // Strictly auto-calculated field
   autoCalcFormulaHint?: string;
 }
 
@@ -51,56 +51,56 @@ export const PORTALS: PortalDefinition[] = [
     shortName: 'Application',
     title: '2. Applicant Portal',
     subtitle: 'इस पोर्टल पर नामांकनकर्ता अपनी व्यक्तिगत एवं रेजिडेंस संबंधी जानकारी साँझा करे।',
-    questionRange: [2, 35],
+    questionRange: [2, 38],
   },
   {
     id: 3,
     shortName: 'Enrollment',
     title: '3. Enrolment Portal',
     subtitle: 'इस भाग मे नामांकनकर्ता अपने CLAP कोर्स/क्लास/प्रोग्राम से संबंधित नामांकन रिकार्ड की जानकारी साँझा करे।',
-    questionRange: [36, 49],
+    questionRange: [39, 52],
   },
   {
     id: 4,
     shortName: 'Package',
     title: '4. Package Portal',
     subtitle: 'इस भाग मे नामांकनकर्ता अपने CLAP कोर्स/क्लास/प्रोग्राम को संचालित करने हेतु पैकेज की जानकारी साँझा करे।',
-    questionRange: [50, 64],
+    questionRange: [53, 67],
   },
   {
     id: 5,
     shortName: 'CLAP',
     title: '5. CLAP Portal',
     subtitle: 'इस भाग मे नामांकनकर्ता अपने CLAP कोर्स/क्लास/प्रोग्राम के चयन संबंधित जानकारी साँझा करे।',
-    questionRange: [65, 75],
+    questionRange: [68, 78],
   },
   {
     id: 6,
     shortName: 'Document',
     title: '6. Document Submission Portal',
     subtitle: 'इस पोर्टल पर नामांकनकर्ता अपने सभी आवश्यक दस्तावेज अपलोड करे।',
-    questionRange: [76, 89],
+    questionRange: [79, 92],
   },
   {
     id: 7,
     shortName: 'Fee',
     title: '7. Fee Portal',
     subtitle: 'इस भाग मे नामांकनकर्ता अपने CLAP कोर्स/क्लास/प्रोग्राम से संबंधित फीस की जानकारी साँझा करे।',
-    questionRange: [90, 97],
+    questionRange: [93, 100],
   },
   {
     id: 8,
     shortName: 'Concession',
     title: '8. Concession Portal',
     subtitle: 'इस पोर्टल पर नामांकनकर्ता फीस मे मिलने वाली रियायत संबंधी जानकारी साँझा करे।',
-    questionRange: [98, 107],
+    questionRange: [101, 110],
   },
   {
     id: 9,
     shortName: 'Payment',
     title: '9. Payment Portal',
     subtitle: 'इस पोर्टल पर नामांकनकर्ता अपने फीस के भुगतान संबंधी जानकारी साँझा करे।',
-    questionRange: [108, 117],
+    questionRange: [111, 120],
   },
   {
     id: 10,
@@ -108,7 +108,7 @@ export const PORTALS: PortalDefinition[] = [
     title: '10. Oath Portal',
     subtitle:
       'शपथकर्ता द्वारा अपने स्वयं के आधार कार्ड की फोटो प्रति लिपि पर लिखित हस्ताक्षर करते हुए प्रवेशार्थी के प्रवेश एवं नामांकन प्रक्रिया के बाबत ऑनलाइन डिजिटल सहमति एवं स्वीकृति प्रदान करने हेतु आधिकारिक डिजिटल शपथ पत्र',
-    questionRange: [118, 172],
+    questionRange: [121, 175],
   },
 ];
 
@@ -130,7 +130,7 @@ export const QUESTIONS: QuestionItem[] = [
   },
 
   // ==========================================
-  // PORTAL 2: APPLICANT PORTAL (Q2 - Q35)
+  // PORTAL 2: APPLICANT PORTAL (Q2 - Q38)
   // ==========================================
   {
     number: 2,
@@ -230,6 +230,30 @@ export const QUESTIONS: QuestionItem[] = [
   },
   {
     number: 14,
+    id: 'q14_guardian_name',
+    portalId: 2,
+    label: "Applicant's Guardian Name",
+    inputType: 'text',
+    colSpan: 2,
+  },
+  {
+    number: 15,
+    id: 'q15_guardian_uid',
+    portalId: 2,
+    label: "Applicant's Guardian UID Number",
+    inputType: 'text',
+    colSpan: 1,
+  },
+  {
+    number: 16,
+    id: 'q16_guardian_mobile',
+    portalId: 2,
+    label: "Applicant's Guardian Mobile Number",
+    inputType: 'text',
+    colSpan: 1,
+  },
+  {
+    number: 17,
     id: 'q14',
     portalId: 2,
     label: "Applicant's Sex",
@@ -238,7 +262,7 @@ export const QUESTIONS: QuestionItem[] = [
     options: ['Male', 'Female', 'Gay'],
   },
   {
-    number: 15,
+    number: 18,
     id: 'q15',
     portalId: 2,
     label: "Applicant's Date of Birth",
@@ -247,7 +271,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 16,
+    number: 19,
     id: 'q16',
     portalId: 2,
     label: "Applicant's Marital Status",
@@ -256,7 +280,7 @@ export const QUESTIONS: QuestionItem[] = [
     options: ['Bachelor', 'Married', 'Widow', 'Widower', 'Divorcee', 'Other'],
   },
   {
-    number: 17,
+    number: 20,
     id: 'q17',
     portalId: 2,
     label: "Applicant's Caste",
@@ -264,7 +288,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 18,
+    number: 21,
     id: 'q18',
     portalId: 2,
     label: "Applicant's Category",
@@ -273,7 +297,7 @@ export const QUESTIONS: QuestionItem[] = [
     options: ['GEN', 'EWS', 'OBC', 'MBC', 'SC', 'ST', 'Other'],
   },
   {
-    number: 19,
+    number: 22,
     id: 'q19',
     portalId: 2,
     label: "Applicant's Religion",
@@ -282,7 +306,7 @@ export const QUESTIONS: QuestionItem[] = [
     options: ['Hindu', 'Muslim', 'Sikh', 'Christianity', 'Jain', 'Buddhists', 'Other'],
   },
   {
-    number: 20,
+    number: 23,
     id: 'q20',
     portalId: 2,
     label: "Applicant's Nationality",
@@ -290,9 +314,9 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 2,
     options: ['Indian', 'Migrant', 'Immigrant', 'Foreigner', 'Refugee/Fugative'],
   },
-  // Resident Information sub-heading renders right before Q21
+  // Resident Information sub-heading renders right before Q24 (old Q21)
   {
-    number: 21,
+    number: 24,
     id: 'q21',
     portalId: 2,
     label: 'Residence No',
@@ -300,7 +324,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 22,
+    number: 25,
     id: 'q22',
     portalId: 2,
     label: 'Street/Road',
@@ -308,7 +332,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 23,
+    number: 26,
     id: 'q23',
     portalId: 2,
     label: 'Colony',
@@ -316,7 +340,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 24,
+    number: 27,
     id: 'q24',
     portalId: 2,
     label: 'Block/Village',
@@ -324,7 +348,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 25,
+    number: 28,
     id: 'q25',
     portalId: 2,
     label: 'Ward/Block No',
@@ -332,7 +356,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 26,
+    number: 29,
     id: 'q26',
     portalId: 2,
     label: 'Sub-Town',
@@ -340,7 +364,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 27,
+    number: 30,
     id: 'q27',
     portalId: 2,
     label: 'City',
@@ -348,7 +372,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 28,
+    number: 31,
     id: 'q28',
     portalId: 2,
     label: 'Pin/Zip Code',
@@ -356,7 +380,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 29,
+    number: 32,
     id: 'q29',
     portalId: 2,
     label: 'District',
@@ -364,7 +388,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 30,
+    number: 33,
     id: 'q30',
     portalId: 2,
     label: 'Division',
@@ -372,7 +396,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 31,
+    number: 34,
     id: 'q31',
     portalId: 2,
     label: 'States',
@@ -418,7 +442,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 32,
+    number: 35,
     id: 'q32',
     portalId: 2,
     label: 'Country',
@@ -427,7 +451,7 @@ export const QUESTIONS: QuestionItem[] = [
     options: ['India', 'Bangladesh', 'Saudi Arab', 'Other'],
   },
   {
-    number: 33,
+    number: 36,
     id: 'q33',
     portalId: 2,
     label: 'Latitude',
@@ -435,7 +459,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 34,
+    number: 37,
     id: 'q34',
     portalId: 2,
     label: 'Longitude',
@@ -443,7 +467,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 35,
+    number: 38,
     id: 'q35',
     portalId: 2,
     label: 'Google Plus Code',
@@ -452,10 +476,10 @@ export const QUESTIONS: QuestionItem[] = [
   },
 
   // ==========================================
-  // PORTAL 3: ENROLMENT PORTAL (Q36 - Q49)
+  // PORTAL 3: ENROLMENT PORTAL (Q39 - Q52)
   // ==========================================
   {
-    number: 36,
+    number: 39,
     id: 'q36',
     portalId: 3,
     label: 'Enrolment Frequency',
@@ -473,7 +497,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 37,
+    number: 40,
     id: 'q37',
     portalId: 3,
     label: 'Enrolment Session',
@@ -492,7 +516,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 38,
+    number: 41,
     id: 'q38',
     portalId: 3,
     label: 'Enrolment Date',
@@ -501,7 +525,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 39,
+    number: 42,
     id: 'q39',
     portalId: 3,
     label: 'Interview Status',
@@ -523,7 +547,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 40,
+    number: 43,
     id: 'q40',
     portalId: 3,
     label: 'Interview S. No',
@@ -531,7 +555,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 41,
+    number: 44,
     id: 'q41',
     portalId: 3,
     label: 'S.R. Number',
@@ -539,7 +563,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 42,
+    number: 45,
     id: 'q42',
     portalId: 3,
     label: 'Registration Number',
@@ -547,7 +571,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 43,
+    number: 46,
     id: 'q43',
     portalId: 3,
     label: 'Enrolment Number',
@@ -556,7 +580,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 3,
   },
   {
-    number: 44,
+    number: 47,
     id: 'q44',
     portalId: 3,
     label: 'APAR ID Number',
@@ -564,7 +588,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 45,
+    number: 48,
     id: 'q45',
     portalId: 3,
     label: 'DEB ID Number',
@@ -572,7 +596,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 46,
+    number: 49,
     id: 'q46',
     portalId: 3,
     label: 'NIC ID Number',
@@ -580,7 +604,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 47,
+    number: 50,
     id: 'q47',
     portalId: 3,
     label: 'Total Active Applicant Alloted Number',
@@ -588,7 +612,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 48,
+    number: 51,
     id: 'q48',
     portalId: 3,
     label: "Applicant's Alloted Number",
@@ -596,7 +620,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 2,
   },
   {
-    number: 49,
+    number: 52,
     id: 'q49',
     portalId: 3,
     label: 'Enrolment CLAP Number',
@@ -606,10 +630,10 @@ export const QUESTIONS: QuestionItem[] = [
   },
 
   // ==========================================
-  // PORTAL 4: PACKAGE PORTAL (Q50 - Q64)
+  // PORTAL 4: PACKAGE PORTAL (Q53 - Q67)
   // ==========================================
   {
-    number: 50,
+    number: 53,
     id: 'q50',
     portalId: 4,
     label: 'Package Location',
@@ -625,7 +649,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 51,
+    number: 54,
     id: 'q51',
     portalId: 4,
     label: 'Package Offer',
@@ -634,7 +658,7 @@ export const QUESTIONS: QuestionItem[] = [
     options: ['Product', 'Service', 'Both (Product/Service)'],
   },
   {
-    number: 52,
+    number: 55,
     id: 'q52',
     portalId: 4,
     label: 'Package Commitment',
@@ -643,7 +667,7 @@ export const QUESTIONS: QuestionItem[] = [
     options: ['Guaranteed', 'Semi-Guaranteed', 'Replacement', 'Non- Guaranteed'],
   },
   {
-    number: 53,
+    number: 56,
     id: 'q53',
     portalId: 4,
     label: 'Package Beneficiary',
@@ -656,7 +680,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 54,
+    number: 57,
     id: 'q54',
     portalId: 4,
     label: 'Package Outcome',
@@ -674,7 +698,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 55,
+    number: 58,
     id: 'q55',
     portalId: 4,
     label: 'Package Type',
@@ -683,7 +707,7 @@ export const QUESTIONS: QuestionItem[] = [
     options: ['Virtual', 'Auditory', 'Kinesthetic'],
   },
   {
-    number: 56,
+    number: 59,
     id: 'q56',
     portalId: 4,
     label: 'Package Delivery',
@@ -706,7 +730,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 57,
+    number: 60,
     id: 'q57',
     portalId: 4,
     label: 'Package Medium',
@@ -715,16 +739,16 @@ export const QUESTIONS: QuestionItem[] = [
     options: ['Hindi', 'English', 'Both'],
   },
   {
-    number: 58,
+    number: 61,
     id: 'q58',
     portalId: 4,
     label: 'Package Mode',
     inputType: 'dropdown',
     colSpan: 1,
-    options: ['Online', 'Offline', 'Both'],
+    options: ['Online', 'Offline', 'Online and Offline (Both)'],
   },
   {
-    number: 59,
+    number: 62,
     id: 'q59',
     portalId: 4,
     label: 'Package Category',
@@ -733,7 +757,7 @@ export const QUESTIONS: QuestionItem[] = [
     options: ['Academic', 'Professional', 'Vocational', 'Technical', 'All In One'],
   },
   {
-    number: 60,
+    number: 63,
     id: 'q60',
     portalId: 4,
     label: 'Package Components',
@@ -750,7 +774,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 61,
+    number: 64,
     id: 'q61',
     portalId: 4,
     label: 'Package Duration',
@@ -767,7 +791,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 62,
+    number: 65,
     id: 'q62',
     portalId: 4,
     label: 'Package Days',
@@ -785,7 +809,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 63,
+    number: 66,
     id: 'q63',
     portalId: 4,
     label: "Package's Timing Slot",
@@ -801,7 +825,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 64,
+    number: 67,
     id: 'q64',
     portalId: 4,
     label: "Package's Timing Zone",
@@ -811,10 +835,10 @@ export const QUESTIONS: QuestionItem[] = [
   },
 
   // ==========================================
-  // PORTAL 5: CLAP PORTAL (Q65 - Q75)
+  // PORTAL 5: CLAP PORTAL (Q68 - Q78)
   // ==========================================
   {
-    number: 65,
+    number: 68,
     id: 'q65',
     portalId: 5,
     label: 'CLAP Pattern',
@@ -829,7 +853,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 66,
+    number: 69,
     id: 'q66',
     portalId: 5,
     label: 'CLAP (Board/University)',
@@ -849,7 +873,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 67,
+    number: 70,
     id: 'q67',
     portalId: 5,
     label: 'CLAP Body',
@@ -862,7 +886,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 68,
+    number: 71,
     id: 'q68',
     portalId: 5,
     label: 'CLAP Gate way',
@@ -877,7 +901,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 69,
+    number: 72,
     id: 'q69',
     portalId: 5,
     label: 'CLAP Type',
@@ -899,7 +923,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 70,
+    number: 73,
     id: 'q70',
     portalId: 5,
     label: 'CLAP Level',
@@ -920,7 +944,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 71,
+    number: 74,
     id: 'q71',
     portalId: 5,
     label: 'CLAP Category',
@@ -958,7 +982,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 72,
+    number: 75,
     id: 'q72',
     portalId: 5,
     label: 'CLAP चुने',
@@ -1029,7 +1053,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 73,
+    number: 76,
     id: 'q73',
     portalId: 5,
     label: 'CLAP Stream अपने विषय के संकाय का चयन करे',
@@ -1046,7 +1070,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 74,
+    number: 77,
     id: 'q74',
     portalId: 5,
     label:
@@ -1055,7 +1079,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 2,
   },
   {
-    number: 75,
+    number: 78,
     id: 'q75',
     portalId: 5,
     label:
@@ -1065,10 +1089,10 @@ export const QUESTIONS: QuestionItem[] = [
   },
 
   // ==========================================
-  // PORTAL 6: DOCUMENT SUBMISSION PORTAL (Q76 - Q89)
+  // PORTAL 6: DOCUMENT SUBMISSION PORTAL (Q79 - Q92)
   // ==========================================
   {
-    number: 76,
+    number: 79,
     id: 'q76',
     portalId: 6,
     label: "Upload Applicant's Photo",
@@ -1078,7 +1102,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 2,
   },
   {
-    number: 77,
+    number: 80,
     id: 'q77',
     portalId: 6,
     label: "Upload Applicant's Sign",
@@ -1088,7 +1112,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 2,
   },
   {
-    number: 78,
+    number: 81,
     id: 'q78',
     portalId: 6,
     label: "Upload Applicant's UID",
@@ -1098,7 +1122,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 4,
   },
   {
-    number: 79,
+    number: 82,
     id: 'q79',
     portalId: 6,
     label: "Upload Applicant's DOB",
@@ -1107,7 +1131,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 4,
   },
   {
-    number: 80,
+    number: 83,
     id: 'q80',
     portalId: 6,
     label: "Upload Applicant's Marksheet",
@@ -1116,7 +1140,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 4,
   },
   {
-    number: 81,
+    number: 84,
     id: 'q81',
     portalId: 6,
     label: "Upload Applicant's Eligibility Certificate",
@@ -1125,7 +1149,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 4,
   },
   {
-    number: 82,
+    number: 85,
     id: 'q82',
     portalId: 6,
     label: "Upload Applicant's TC",
@@ -1134,7 +1158,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 4,
   },
   {
-    number: 83,
+    number: 86,
     id: 'q83',
     portalId: 6,
     label: "Upload Applicant's MC",
@@ -1143,7 +1167,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 4,
   },
   {
-    number: 84,
+    number: 87,
     id: 'q84',
     portalId: 6,
     label: "Upload Applicant's Bonafide Certificate",
@@ -1152,7 +1176,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 4,
   },
   {
-    number: 85,
+    number: 88,
     id: 'q85',
     portalId: 6,
     label: "Upload Applicant's Anti Ranging Certificate",
@@ -1161,7 +1185,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 4,
   },
   {
-    number: 86,
+    number: 89,
     id: 'q86',
     portalId: 6,
     label: "Upload Applicant's Caste Certificate",
@@ -1170,7 +1194,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 4,
   },
   {
-    number: 87,
+    number: 90,
     id: 'q87',
     portalId: 6,
     label: "Upload Applicant's Domicile Certificate",
@@ -1179,16 +1203,16 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 4,
   },
   {
-    number: 88,
+    number: 91,
     id: 'q88',
     portalId: 6,
-    label: "Upload Applicant's JANADHAR",
+    label: 'Upload Applicant Interview Certificate',
     inputType: 'file',
     fileFrameType: 'a4_full',
     colSpan: 4,
   },
   {
-    number: 89,
+    number: 92,
     id: 'q89',
     portalId: 6,
     label: "Upload Applicant's Concession Certificate",
@@ -1198,10 +1222,10 @@ export const QUESTIONS: QuestionItem[] = [
   },
 
   // ==========================================
-  // PORTAL 7: FEE PORTAL (Q90 - Q97)
+  // PORTAL 7: FEE PORTAL (Q93 - Q100)
   // ==========================================
   {
-    number: 90,
+    number: 93,
     id: 'q90',
     portalId: 7,
     label: 'GST Status',
@@ -1210,7 +1234,7 @@ export const QUESTIONS: QuestionItem[] = [
     options: ['GST Applicable Fee (18%)'],
   },
   {
-    number: 91,
+    number: 94,
     id: 'q91',
     portalId: 7,
     label: 'CLAP Scheme',
@@ -1219,7 +1243,7 @@ export const QUESTIONS: QuestionItem[] = [
     options: ['General (Refundable)', 'Concession (Refundable)', 'Free of cost (Rewarded)'],
   },
   {
-    number: 92,
+    number: 95,
     id: 'q92',
     portalId: 7,
     label: 'Enrollment cum Inteview Charges',
@@ -1230,7 +1254,7 @@ export const QUESTIONS: QuestionItem[] = [
     options: ['1600 INR (Valid up to current Plan Validity)'],
   },
   {
-    number: 93,
+    number: 96,
     id: 'q93',
     portalId: 7,
     label: 'Select CLAP Core, Refundable Package',
@@ -1268,7 +1292,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 94,
+    number: 97,
     id: 'q94',
     portalId: 7,
     label: 'Select Final CLAP Maintenance Core Services Fee',
@@ -1306,7 +1330,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 95,
+    number: 98,
     id: 'q95',
     portalId: 7,
     label: 'Board/University Enrolment Non-Refundable Fee',
@@ -1314,7 +1338,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 2,
   },
   {
-    number: 96,
+    number: 99,
     id: 'q96',
     portalId: 7,
     label: 'Board/University Exam Non-Refundable Fee',
@@ -1322,7 +1346,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 2,
   },
   {
-    number: 97,
+    number: 100,
     id: 'q97',
     portalId: 7,
     label: 'Total CLAP Payable Fee',
@@ -1331,14 +1355,14 @@ export const QUESTIONS: QuestionItem[] = [
     inputType: 'text',
     colSpan: 4,
     readOnlyAutoCalc: true,
-    autoCalcFormulaHint: 'Auto-Calculated: Point 92 + Point 93 + Point 94 + Point 95 + Point 96',
+    autoCalcFormulaHint: 'Auto-Calculated: Point 95 + Point 96 + Point 97 + Point 98 + Point 99',
   },
 
   // ==========================================
-  // PORTAL 8: CONCESSION PORTAL (Q98 - Q107)
+  // PORTAL 8: CONCESSION PORTAL (Q101 - Q110)
   // ==========================================
   {
-    number: 98,
+    number: 101,
     id: 'q98',
     portalId: 8,
     label: 'Concession is awarded when',
@@ -1361,7 +1385,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 99,
+    number: 102,
     id: 'q99',
     portalId: 8,
     label: 'Consession Certificate Number',
@@ -1369,7 +1393,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 2,
   },
   {
-    number: 100,
+    number: 103,
     id: 'q100',
     portalId: 8,
     label: 'Concession provided for',
@@ -1382,7 +1406,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 101,
+    number: 104,
     id: 'q101',
     portalId: 8,
     label: 'Concession Category',
@@ -1400,7 +1424,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 102,
+    number: 105,
     id: 'q102',
     portalId: 8,
     label: 'Concession Mode',
@@ -1416,7 +1440,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 103,
+    number: 106,
     id: 'q103',
     portalId: 8,
     label: 'Concessed Fee',
@@ -1425,10 +1449,10 @@ export const QUESTIONS: QuestionItem[] = [
     inputType: 'text',
     colSpan: 4,
     readOnlyAutoCalc: true,
-    autoCalcFormulaHint: 'Auto-Calculated: Total CLAP Payable Fee (97) − Net Payable CLAP Fee (105)',
+    autoCalcFormulaHint: 'Auto-Calculated: Total CLAP Payable Fee (100) − Net Payable CLAP Fee (108)',
   },
   {
-    number: 104,
+    number: 107,
     id: 'q104',
     portalId: 8,
     label: 'Free Package',
@@ -1437,7 +1461,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 4,
   },
   {
-    number: 105,
+    number: 108,
     id: 'q105',
     portalId: 8,
     label: 'Net Payable CLAP Fee (Under Special Offer & Discount Package)',
@@ -1454,7 +1478,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 106,
+    number: 109,
     id: 'q106',
     portalId: 8,
     label: 'GST Payable Fee',
@@ -1463,10 +1487,10 @@ export const QUESTIONS: QuestionItem[] = [
     inputType: 'text',
     colSpan: 2,
     readOnlyAutoCalc: true,
-    autoCalcFormulaHint: 'Auto-Calculated: Net Payable CLAP Fee (105) × 18 ÷ 100',
+    autoCalcFormulaHint: 'Auto-Calculated: Net Payable CLAP Fee (108) × 18 ÷ 100',
   },
   {
-    number: 107,
+    number: 110,
     id: 'q107',
     portalId: 8,
     label: 'Final Payable Fee',
@@ -1475,14 +1499,14 @@ export const QUESTIONS: QuestionItem[] = [
     inputType: 'text',
     colSpan: 2,
     readOnlyAutoCalc: true,
-    autoCalcFormulaHint: 'Auto-Calculated: Net Payable CLAP Fee (105) + GST Payable Fee (106)',
+    autoCalcFormulaHint: 'Auto-Calculated: Net Payable CLAP Fee (108) + GST Payable Fee (109)',
   },
 
   // ==========================================
-  // PORTAL 9: PAYMENT PORTAL (Q108 - Q117)
+  // PORTAL 9: PAYMENT PORTAL (Q111 - Q120)
   // ==========================================
   {
-    number: 108,
+    number: 111,
     id: 'q108',
     portalId: 9,
     label: 'Fee Pay off',
@@ -1502,7 +1526,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 109,
+    number: 112,
     id: 'q109',
     portalId: 9,
     label: 'Pay Type',
@@ -1511,7 +1535,7 @@ export const QUESTIONS: QuestionItem[] = [
     options: ['Cash', 'Online (Digital Payment)'],
   },
   {
-    number: 110,
+    number: 113,
     id: 'q110',
     portalId: 9,
     label: "Select NVEA's Official Beneficiary Bank",
@@ -1523,7 +1547,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 111,
+    number: 114,
     id: 'q111',
     portalId: 9,
     label: 'Mode of Fees फीस जमा कराने का तरीका चुने',
@@ -1545,7 +1569,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 112,
+    number: 115,
     id: 'q112',
     portalId: 9,
     label: 'Payment Gateway',
@@ -1566,7 +1590,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 113,
+    number: 116,
     id: 'q113',
     portalId: 9,
     label: 'Online Payment Details',
@@ -1574,7 +1598,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 2,
   },
   {
-    number: 114,
+    number: 117,
     id: 'q114',
     portalId: 9,
     label: 'Offline Payment Details',
@@ -1582,7 +1606,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 115,
+    number: 118,
     id: 'q115',
     portalId: 9,
     label: 'Fee Pay Out Day',
@@ -1590,9 +1614,9 @@ export const QUESTIONS: QuestionItem[] = [
     placeholder: 'Example: 7 January 2019',
     colSpan: 1,
   },
-  // Live Fee Status sub-heading renders right before Q116
+  // Live Fee Status sub-heading renders right before Q119 (old Q116)
   {
-    number: 116,
+    number: 119,
     id: 'q116',
     portalId: 9,
     label: 'Deposited Fee',
@@ -1600,22 +1624,22 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 2,
   },
   {
-    number: 117,
+    number: 120,
     id: 'q117',
     portalId: 9,
     label: 'Outstanding Fee',
     inputType: 'text',
     colSpan: 2,
     readOnlyAutoCalc: true,
-    autoCalcFormulaHint: 'Auto-Calculated: Final Payable Fee (107) − Deposited Fee (116)',
+    autoCalcFormulaHint: 'Auto-Calculated: Final Payable Fee (110) − Deposited Fee (119)',
   },
 
   // ==========================================
-  // PORTAL 10: OATH PORTAL (Q118 - Q171)
+  // PORTAL 10: OATH PORTAL (Q121 - Q175)
   // ==========================================
-  // "1. Oath Declaration Portal" block renders before Q118
+  // "1. Oath Declaration Portal" block renders before Q121 (id: q118)
   {
-    number: 118,
+    number: 121,
     id: 'q118',
     portalId: 10,
     label: 'Oath Certified By यह शपथपत्र प्रस्तुत किया जाता है।',
@@ -1627,7 +1651,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 119,
+    number: 122,
     id: 'q119',
     portalId: 10,
     label: 'I am',
@@ -1636,25 +1660,25 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 2,
   },
   {
-    number: 120,
+    number: 123,
     id: 'q120',
     portalId: 10,
     label: 'Relation',
     inputType: 'dropdown',
     colSpan: 1,
-    options: ['Son', 'Daughter', 'Husband', 'Wife'],
+    options: ['Son', 'Daughter', 'Husband', 'Wife', 'Ward'],
   },
   {
-    number: 121,
+    number: 124,
     id: 'q121',
     portalId: 10,
     label: 'Of',
-    description: 'शपथकर्ता अपने पिता/माता/पति/पत्नी का नाम भरे',
+    description: 'शपथकर्ता अपने पिता, माता, पति और पत्नी / अभिभावक का नाम भरे',
     inputType: 'text',
     colSpan: 1,
   },
   {
-    number: 122,
+    number: 125,
     id: 'q122',
     portalId: 10,
     label: 'DOB',
@@ -1664,7 +1688,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 123,
+    number: 126,
     id: 'q123',
     portalId: 10,
     label: "Deponent's Sex",
@@ -1674,7 +1698,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 124,
+    number: 127,
     id: 'q124',
     portalId: 10,
     label: 'Oath Regisration Number',
@@ -1684,7 +1708,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 4,
   },
   {
-    number: 125,
+    number: 128,
     id: 'q125',
     portalId: 10,
     label: "Deponent 's Consent Form Number",
@@ -1694,7 +1718,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 4,
   },
   {
-    number: 126,
+    number: 129,
     id: 'q126',
     portalId: 10,
     label: 'UID No',
@@ -1703,7 +1727,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 127,
+    number: 130,
     id: 'q127',
     portalId: 10,
     label: 'Mobile Number',
@@ -1712,7 +1736,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 128,
+    number: 131,
     id: 'q128',
     portalId: 10,
     label: 'शपथ दिनाँक',
@@ -1720,18 +1744,25 @@ export const QUESTIONS: QuestionItem[] = [
     placeholder: 'Example: 7 January 2019',
     colSpan: 2,
   },
-  // Oath Statement + "1. संस्थान संबंधी सत्यापन" + "2. नामांकन स्थिति और सीमा" render before Q129
+  // Oath Statement + "1. संस्थान संबंधी सत्यापन" + "2. नामांकन स्थिति और सीमा" render before Q132 (id: q129)
   {
-    number: 129,
+    number: 132,
     id: 'q129',
     portalId: 10,
     label: '2.1 मैं सत्यापित करता/करती हूँ कि वर्तमान मे',
     inputType: 'dropdown',
     colSpan: 1,
-    options: ['मेरा स्वयं का', 'मेरे पुत्र का', 'मेरी पुत्री का', 'मेरे पति का', 'मेरी पत्नी का'],
+    options: [
+      'मेरा स्वयं का',
+      'मेरे पुत्र का',
+      'मेरी पुत्री का',
+      'मेरे पति का',
+      'मेरी पत्नी का',
+      'मेरे वार्ड का',
+    ],
   },
   {
-    number: 130,
+    number: 133,
     id: 'q130',
     portalId: 10,
     label: 'वर्तमान में NVEA में Interview Serial Number है।',
@@ -1739,7 +1770,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 131,
+    number: 134,
     id: 'q131',
     portalId: 10,
     label: 'वर्तमान में NVEA में S.R. Number है।',
@@ -1747,7 +1778,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 132,
+    number: 135,
     id: 'q132',
     portalId: 10,
     label: 'वर्तमान में NVEA में Register Number है।',
@@ -1755,7 +1786,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 133,
+    number: 136,
     id: 'q133',
     portalId: 10,
     label: 'वर्तमान में NVEA में B/U Enrolment Number है।',
@@ -1763,7 +1794,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 2,
   },
   {
-    number: 134,
+    number: 137,
     id: 'q134',
     portalId: 10,
     label: 'वर्तमान में NVEA में CLAP Number है।',
@@ -1771,9 +1802,9 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 2,
     options: ['1 CLAP ODE', '2 CLAP RSE', '3 CLAP PEP'],
   },
-  // Statutory Notice ("विधिक अधिसूचना / STATUTORY NOTICE") renders before Q135
+  // Statutory Notice ("विधिक अधिसूचना / STATUTORY NOTICE") renders before Q138 (id: q135)
   {
-    number: 135,
+    number: 138,
     id: 'q135',
     portalId: 10,
     label:
@@ -1782,7 +1813,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 2,
   },
   {
-    number: 136,
+    number: 139,
     id: 'q136',
     portalId: 10,
     label: 'का सक्रिय अलॉटमेंट संख्या क्रमांक (Current Allotment Number) है।',
@@ -1790,7 +1821,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 2,
   },
   {
-    number: 137,
+    number: 140,
     id: 'q137',
     portalId: 10,
     label: 'वर्तमान में NVEA में APAR ID है।',
@@ -1798,7 +1829,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 138,
+    number: 141,
     id: 'q138',
     portalId: 10,
     label: 'वर्तमान में NVEA में DEB ID है।',
@@ -1806,7 +1837,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 139,
+    number: 142,
     id: 'q139',
     portalId: 10,
     label: 'वर्तमान में NVEA में NIC ID है।',
@@ -1814,7 +1845,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 140,
+    number: 143,
     id: 'q140',
     portalId: 10,
     label: 'का आधार नंबर है।',
@@ -1822,7 +1853,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 141,
+    number: 144,
     id: 'q141',
     portalId: 10,
     label: 'का जनआधार नंबर है।',
@@ -1830,7 +1861,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 142,
+    number: 145,
     id: 'q142',
     portalId: 10,
     label: 'की जन्मतिथि है।',
@@ -1839,7 +1870,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 143,
+    number: 146,
     id: 'q143',
     portalId: 10,
     label: 'की CLAP हेतु नामांकन दिनांक है।',
@@ -1848,7 +1879,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 144,
+    number: 147,
     id: 'q144',
     portalId: 10,
     label: 'को CLAP Title क्लास/कोर्स उपलब्ध कराया है।',
@@ -1861,7 +1892,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 145,
+    number: 148,
     id: 'q145',
     portalId: 10,
     label: 'वर्तमान में NVEA में CLAP Name & Code का नाम है।',
@@ -1869,7 +1900,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 2,
   },
   {
-    number: 146,
+    number: 149,
     id: 'q146',
     portalId: 10,
     label: 'वर्तमान में NVEA में CLAP Subject & Code का नाम है।',
@@ -1877,7 +1908,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 2,
   },
   {
-    number: 147,
+    number: 150,
     id: 'q147',
     portalId: 10,
     label: 'वर्तमान में NVEA में Semester/Batch/Session है।',
@@ -1885,7 +1916,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 148,
+    number: 151,
     id: 'q148',
     portalId: 10,
     label: 'वर्तमान में NVEA में CLAP Package की अवधि है।',
@@ -1902,7 +1933,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 149,
+    number: 152,
     id: 'q149',
     portalId: 10,
     label: 'को CLAP Medium उपलब्ध कराया है।',
@@ -1911,16 +1942,16 @@ export const QUESTIONS: QuestionItem[] = [
     options: ['In English Medium', 'In Hindi Medium'],
   },
   {
-    number: 150,
+    number: 153,
     id: 'q150',
     portalId: 10,
     label: 'को CLAP Segment उपलब्ध कराया है।',
     inputType: 'dropdown',
     colSpan: 1,
-    options: ['ऑनलाइन सेगमेंट मे', 'ऑफलाइन सेगमेंट मे'],
+    options: ['ऑनलाइन सेगमेंट मे', 'ऑफलाइन सेगमेंट मे', 'ऑनलाइन और ऑफलाइन सेगमेंट मे'],
   },
   {
-    number: 151,
+    number: 154,
     id: 'q151',
     portalId: 10,
     label: 'को CLAP Timing Zone उपलब्ध कराया है।',
@@ -1929,7 +1960,7 @@ export const QUESTIONS: QuestionItem[] = [
     options: ['Morning (8 AM & 2 PM)', 'Evening (4 PM & 7 PM)'],
   },
   {
-    number: 152,
+    number: 155,
     id: 'q152',
     portalId: 10,
     label: 'को CLAP Timing Slot उपलब्ध कराया है।',
@@ -1946,7 +1977,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 153,
+    number: 156,
     id: 'q153',
     portalId: 10,
     label: 'GST Status',
@@ -1955,7 +1986,7 @@ export const QUESTIONS: QuestionItem[] = [
     options: ['GST Applicable Fee (18%)'],
   },
   {
-    number: 154,
+    number: 157,
     id: 'q154',
     portalId: 10,
     label: 'की CLAP Enrolment Cum Interview Fee है',
@@ -1965,7 +1996,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 4,
   },
   {
-    number: 155,
+    number: 158,
     id: 'q155',
     portalId: 10,
     label: 'की CLAP Core Fee है',
@@ -1975,7 +2006,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 4,
   },
   {
-    number: 156,
+    number: 159,
     id: 'q156',
     portalId: 10,
     label: 'की CLAP Maintenance Fee है',
@@ -1985,7 +2016,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 4,
   },
   {
-    number: 157,
+    number: 160,
     id: 'q157',
     portalId: 10,
     label: 'की Board/University Enrolment Non-Refundable Fee है।',
@@ -1993,7 +2024,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 2,
   },
   {
-    number: 158,
+    number: 161,
     id: 'q158',
     portalId: 10,
     label: 'की Board/University Exam Non-Refundable Fee है।',
@@ -2001,17 +2032,17 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 159,
+    number: 162,
     id: 'q159',
     portalId: 10,
     label: 'की Total CLAP Payable Fee है।',
     inputType: 'text',
     colSpan: 1,
     readOnlyAutoCalc: true,
-    autoCalcFormulaHint: 'Auto-Calculated: Sum of Points 154 to 158 (or synced from Point 97)',
+    autoCalcFormulaHint: 'Auto-Calculated: Sum of Points 157 to 161 (or synced from Point 100)',
   },
   {
-    number: 160,
+    number: 163,
     id: 'q160',
     portalId: 10,
     label: 'की CLAP Concession Fee है',
@@ -2020,10 +2051,10 @@ export const QUESTIONS: QuestionItem[] = [
     inputType: 'text',
     colSpan: 4,
     readOnlyAutoCalc: true,
-    autoCalcFormulaHint: 'Auto-Calculated: Total CLAP Payable Fee (159) − Net Payable CLAP Fee (161)',
+    autoCalcFormulaHint: 'Auto-Calculated: Total CLAP Payable Fee (162) − Net Payable CLAP Fee (164)',
   },
   {
-    number: 161,
+    number: 164,
     id: 'q161',
     portalId: 10,
     label: 'की Net Payable CLAP Fee (Under Special Offer & Discount Package) है।',
@@ -2040,7 +2071,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 162,
+    number: 165,
     id: 'q162',
     portalId: 10,
     label: 'की GST Payable Fee है।',
@@ -2049,10 +2080,10 @@ export const QUESTIONS: QuestionItem[] = [
     inputType: 'text',
     colSpan: 4,
     readOnlyAutoCalc: true,
-    autoCalcFormulaHint: 'Auto-Calculated: Net Payable CLAP Fee (161) × 18 ÷ 100',
+    autoCalcFormulaHint: 'Auto-Calculated: Net Payable CLAP Fee (164) × 18 ÷ 100',
   },
   {
-    number: 163,
+    number: 166,
     id: 'q163',
     portalId: 10,
     label: 'की CLAP Final Payable Fee है',
@@ -2061,10 +2092,10 @@ export const QUESTIONS: QuestionItem[] = [
     inputType: 'text',
     colSpan: 4,
     readOnlyAutoCalc: true,
-    autoCalcFormulaHint: 'Auto-Calculated: Net Payable CLAP Fee (161) + GST Payable Fee (162)',
+    autoCalcFormulaHint: 'Auto-Calculated: Net Payable CLAP Fee (164) + GST Payable Fee (165)',
   },
   {
-    number: 164,
+    number: 167,
     id: 'q164',
     portalId: 10,
     label: 'Fee Pay off',
@@ -2084,7 +2115,7 @@ export const QUESTIONS: QuestionItem[] = [
     ],
   },
   {
-    number: 165,
+    number: 168,
     id: 'q165',
     portalId: 10,
     label: 'का Fee Pay Out Day है।',
@@ -2093,7 +2124,7 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 166,
+    number: 169,
     id: 'q166',
     portalId: 10,
     label: 'की Deposited Fee है।',
@@ -2101,17 +2132,17 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 1,
   },
   {
-    number: 167,
+    number: 170,
     id: 'q167',
     portalId: 10,
     label: 'की Outstanding Fee है।',
     inputType: 'text',
     colSpan: 1,
     readOnlyAutoCalc: true,
-    autoCalcFormulaHint: 'Auto-Calculated: Final Payable Fee (163) − Deposited Fee (166)',
+    autoCalcFormulaHint: 'Auto-Calculated: Final Payable Fee (166) − Deposited Fee (169)',
   },
   {
-    number: 168,
+    number: 171,
     id: 'q168',
     portalId: 10,
     label: 'के जमा फीस का Online Payment Details है।',
@@ -2119,16 +2150,16 @@ export const QUESTIONS: QuestionItem[] = [
     colSpan: 2,
   },
   {
-    number: 169,
+    number: 172,
     id: 'q169',
     portalId: 10,
     label: 'के जमा फीस का Offline Payment Details है।',
     inputType: 'text',
     colSpan: 2,
   },
-  // Extensive Legal Declaration & Terms (Pages 82-92) render right before Q170
+  // Extensive Legal Declaration & Terms (Pages 82-92) render right before Q173 (id: q170)
   {
-    number: 170,
+    number: 173,
     id: 'q170',
     portalId: 10,
     label: 'Uplaod Your Consent Certificate (On Hard Photo Copy)',
@@ -2139,17 +2170,17 @@ export const QUESTIONS: QuestionItem[] = [
     hasConsentAffidavitBlock: true,
   },
   {
-    number: 171,
+    number: 174,
     id: 'q171',
     portalId: 10,
     label: 'Consent Verification & Approval',
     description:
-      'अंतिम सहमति सत्यापन एवं स्वीकृति (OTP Verification): सभी अनिवार्य प्रविष्टियों, शर्तों एवं शपथ-पत्र अपलोड (Point 170) की पूर्णता के पश्चात् अपने आधिकारिक ईमेल / संपर्क माध्यम पर प्राप्त वन-टाइम पासवर्ड (OTP) द्वारा अपनी सहमति को सत्यापित एवं अनुमोदित करें।',
+      'अंतिम सहमति सत्यापन एवं स्वीकृति (OTP Verification): सभी अनिवार्य प्रविष्टियों, शर्तों एवं शपथ-पत्र अपलोड (Point 173) की पूर्णता के पश्चात् अपने आधिकारिक ईमेल / संपर्क माध्यम पर प्राप्त वन-टाइम पासवर्ड (OTP) द्वारा अपनी सहमति को सत्यापित एवं अनुमोदित करें।',
     inputType: 'otp_verification',
     colSpan: 4,
   },
   {
-    number: 172,
+    number: 175,
     id: 'q172',
     portalId: 10,
     label: 'Enrolment Status',
@@ -2161,38 +2192,41 @@ export const QUESTIONS: QuestionItem[] = [
 
 /**
  * Strictly Mandatory / Required Questions across the entire form:
- * 1. 76 — Applicant Photo
- * 2. 77 — Applicant Signature
- * 3. 78 — Aadhaar / UID Number
- * 4. 170 — Consent Certificate Upload
+ * 1. 79 — Applicant Photo (id: q76)
+ * 2. 80 — Applicant Signature (id: q77)
+ * 3. 81 — Aadhaar / UID Number (id: q78)
+ * 4. 173 — Consent Certificate Upload (id: q170)
  *
- * All other questions (including document uploads 79 to 89) are Optional.
+ * All other questions (including document uploads 82 to 92) are Optional.
  */
-export const MANDATORY_QUESTION_NUMBERS = new Set<number>([76, 77, 78, 170]);
+export const MANDATORY_QUESTION_NUMBERS = new Set<number>([79, 80, 81, 173]);
 
 /**
  * Determines whether a question is required for validation purposes.
- * Strictly returns true ONLY for Questions 76, 77, 78, and 170.
+ * Strictly returns true ONLY for Questions 79, 80, 81, and 173.
  */
 export function isQuestionRequired(q: QuestionItem): boolean {
   return MANDATORY_QUESTION_NUMBERS.has(q.number);
 }
 
 /**
+ * Package Mode (Portal 4 / id: q58, New Q61) -> CLAP Segment (Portal 10 / id: q150, New Q153)
+ * Maps English Package Mode selection to Hindi CLAP Segment option.
+ */
+export const PACKAGE_MODE_TO_CLAP_SEGMENT_MAP: Record<string, string> = {
+  Online: 'ऑनलाइन सेगमेंट मे',
+  Offline: 'ऑफलाइन सेगमेंट मे',
+  'Online and Offline (Both)': 'ऑनलाइन और ऑफलाइन सेगमेंट मे',
+};
+
+/**
  * Exact One-Way SOURCE -> TARGET Automatic Live Synchronization Mappings
- * Part 1 (14 Fee / Concession / Payment Mappings):
- * 92 -> 154, 93 -> 155, 94 -> 156, 95 -> 157, 96 -> 158, 97 -> 159,
- * 103 -> 160, 105 -> 161, 106 -> 162, 107 -> 163, 116 -> 166, 117 -> 167,
- * 113 -> 168, 114 -> 169
- *
- * Part 2 (20 Enrolment / Package / CLAP / Applicant / Fee Mappings):
- * 40 -> 130, 41 -> 131, 42 -> 132, 43 -> 133, 49 -> 134, 47 -> 135,
- * 48 -> 136, 44 -> 137, 45 -> 138, 46 -> 139, 3 -> 140, 15 -> 142,
- * 38 -> 143, 74 -> 145, 75 -> 146, 57 -> 149, 63 -> 151, 64 -> 152,
- * 90 -> 153, 61 -> 148
+ * Preserves internal field IDs (qXX -> qYY) while adding Payment Portal syncs:
+ * - q108 (Old Q108 / New Q111 Fee Pay off) -> q164 (Old Q164 / New Q167 Fee Pay off)
+ * - q115 (Old Q115 / New Q118 Fee Pay Out Day) -> q165 (Old Q165 / New Q168 Fee Pay Out Day)
  */
 export const SOURCE_TO_TARGET_MAP: Record<string, string> = {
-  // Part 1: 14 Mappings
+  // Part 1: Fee / Concession / Payment Mappings
   q92: 'q154',
   q93: 'q155',
   q94: 'q156',
@@ -2203,11 +2237,13 @@ export const SOURCE_TO_TARGET_MAP: Record<string, string> = {
   q105: 'q161',
   q106: 'q162',
   q107: 'q163',
+  q108: 'q164',
+  q115: 'q165',
   q116: 'q166',
   q117: 'q167',
   q113: 'q168',
   q114: 'q169',
-  // Part 2: 20 Mappings
+  // Part 2: Enrolment / Package / CLAP / Applicant / Fee Mappings
   q40: 'q130',
   q41: 'q131',
   q42: 'q132',
@@ -2229,5 +2265,18 @@ export const SOURCE_TO_TARGET_MAP: Record<string, string> = {
   q90: 'q153',
   q61: 'q148',
 };
+
+/**
+ * Automatically preselected dropdown options on form load (Updates 1, 2, and 3):
+ * - Question No. 93 (id: q90): GST Status -> 'GST Applicable Fee (18%)'
+ * - Question No. 95 (id: q92): Enrollment cum Inteview Charges -> '1600 INR (Valid up to current Plan Validity)'
+ * - Question No. 113 (id: q110): Select NVEA's Official Beneficiary Bank -> 'NVEA, NAND VIDHYA EDUCATION ACADEMY, A/C No–104321010000244, IFSC Code–UBIN0910431'
+ */
+export const PRESELECTED_DROPDOWN_DEFAULTS: Record<string, string> = {
+  q90: 'GST Applicable Fee (18%)',
+  q92: '1600 INR (Valid up to current Plan Validity)',
+  q110: 'NVEA, NAND VIDHYA EDUCATION ACADEMY, A/C No–104321010000244, IFSC Code–UBIN0910431',
+};
+
 
 

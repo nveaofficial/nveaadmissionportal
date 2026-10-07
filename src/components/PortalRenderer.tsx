@@ -246,61 +246,61 @@ export const PortalRenderer: React.FC<PortalRendererProps> = ({
             return (
               <React.Fragment key={q.id}>
                 {/* Exact Pre-Question Sub-Section Blocks (Excluded from Print/Export if their sub-section has no filled responses) */}
-                {q.number === 21 && (
+                {q.number === 24 && (
                   <div
-                    data-subsection-filled={isRangeFilled(21, 35) ? 'true' : 'false'}
+                    data-subsection-filled={isRangeFilled(24, 38) ? 'true' : 'false'}
                     className={`col-span-1 md:col-span-2 lg:col-span-4 ${
-                      !isRangeFilled(21, 35) ? 'no-print' : ''
+                      !isRangeFilled(24, 38) ? 'no-print' : ''
                     }`}
                   >
                     <ResidentInfoHeaderBlock />
                   </div>
                 )}
-                {q.number === 116 && (
+                {q.number === 119 && (
                   <div
-                    data-subsection-filled={isRangeFilled(116, 117) ? 'true' : 'false'}
+                    data-subsection-filled={isRangeFilled(119, 120) ? 'true' : 'false'}
                     className={`col-span-1 md:col-span-2 lg:col-span-4 ${
-                      !isRangeFilled(116, 117) ? 'no-print' : ''
+                      !isRangeFilled(119, 120) ? 'no-print' : ''
                     }`}
                   >
                     <LiveFeeStatusHeaderBlock />
                   </div>
                 )}
-                {q.number === 118 && (
+                {q.number === 121 && (
                   <div
-                    data-subsection-filled={isRangeFilled(118, 128) ? 'true' : 'false'}
+                    data-subsection-filled={isRangeFilled(121, 131) ? 'true' : 'false'}
                     className={`col-span-1 md:col-span-2 lg:col-span-4 ${
-                      !isRangeFilled(118, 128) ? 'no-print' : ''
+                      !isRangeFilled(121, 131) ? 'no-print' : ''
                     }`}
                   >
                     <OathDeclarationPortalIntroBlock />
                   </div>
                 )}
-                {q.number === 129 && (
+                {q.number === 132 && (
                   <div
-                    data-subsection-filled={isRangeFilled(129, 134) ? 'true' : 'false'}
+                    data-subsection-filled={isRangeFilled(132, 137) ? 'true' : 'false'}
                     className={`col-span-1 md:col-span-2 lg:col-span-4 ${
-                      !isRangeFilled(129, 134) ? 'no-print' : ''
+                      !isRangeFilled(132, 137) ? 'no-print' : ''
                     }`}
                   >
                     <OathSection1And2HeaderBlock />
                   </div>
                 )}
-                {q.number === 135 && (
+                {q.number === 138 && (
                   <div
-                    data-subsection-filled={isRangeFilled(135, 169) ? 'true' : 'false'}
+                    data-subsection-filled={isRangeFilled(138, 172) ? 'true' : 'false'}
                     className={`col-span-1 md:col-span-2 lg:col-span-4 ${
-                      !isRangeFilled(135, 169) ? 'no-print' : ''
+                      !isRangeFilled(138, 172) ? 'no-print' : ''
                     }`}
                   >
                     <StatutoryNoticeIntakeLimitBlock />
                   </div>
                 )}
-                {q.number === 170 && (
+                {q.number === 173 && (
                   <div
-                    data-subsection-filled={isRangeFilled(170, 170) ? 'true' : 'false'}
+                    data-subsection-filled={isRangeFilled(173, 173) ? 'true' : 'false'}
                     className={`col-span-1 md:col-span-2 lg:col-span-4 ${
-                      !isRangeFilled(170, 170) ? 'no-print' : ''
+                      !isRangeFilled(173, 173) ? 'no-print' : ''
                     }`}
                   >
                     <OathDetailedClausesBlock />
@@ -443,11 +443,11 @@ export const PortalRenderer: React.FC<PortalRendererProps> = ({
                       >
                         {q.inputType === 'dropdown' && (
                           <div>
-                            {q.number === 172 && !isConsentVerified && (
+                            {q.number === 175 && !isConsentVerified && (
                               <div className="mb-1.5 p-2 bg-amber-50 border border-amber-300 rounded-sm text-[11px] text-amber-950 flex items-center gap-1.5">
                                 <Lock className="w-3.5 h-3.5 text-amber-800 shrink-0" />
                                 <span>
-                                  Point 172 (Enrolment Status) is locked until Point 171 (Consent
+                                  Point 175 (Enrolment Status) is locked until Point 174 (Consent
                                   Verification &amp; Approval via OTP) is verified.
                                 </span>
                               </div>
@@ -455,7 +455,7 @@ export const PortalRenderer: React.FC<PortalRendererProps> = ({
                             <select
                               id={`input-${q.id}`}
                               value={strVal}
-                              disabled={q.number === 172 && !isConsentVerified}
+                              disabled={q.number === 175 && !isConsentVerified}
                               aria-invalid={showFieldWarning}
                               onBlur={() => onFieldBlur?.(q.id)}
                               onChange={(e) => {
@@ -631,13 +631,17 @@ export const PortalRenderer: React.FC<PortalRendererProps> = ({
                                 ? answers.q119.trim()
                                 : 'Applicant'
                             }
+                            answers={answers}
                             priorIncompleteCount={priorIncompleteCountForQ171}
                             isQ170Uploaded={(uploadedFiles.q170?.length || 0) > 0}
                             onJumpToIncomplete={onJumpToIncomplete}
                             verificationValue={strVal}
-                            onVerified={(statusText) => {
+                            onVerified={(statusText, details) => {
                               onAnswerChange('q171', statusText);
                               onAnswerChange('q172', 'Enrolment is done successfully');
+                              if (details?.interviewSerialNumber) {
+                                onAnswerChange('q40', details.interviewSerialNumber);
+                              }
                               onFieldBlur?.('q171');
                             }}
                           />

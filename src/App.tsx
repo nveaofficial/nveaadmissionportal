@@ -14,12 +14,16 @@ import {
   FileDown,
   Share2,
   RefreshCw,
+  ExternalLink,
+  Link2,
 } from 'lucide-react';
 import {
   PORTALS,
   QUESTIONS,
   isQuestionRequired,
   SOURCE_TO_TARGET_MAP,
+  PACKAGE_MODE_TO_CLAP_SEGMENT_MAP,
+  PRESELECTED_DROPDOWN_DEFAULTS,
 } from './data/formSchema';
 import {
   PortalRenderer,
@@ -28,6 +32,8 @@ import {
   checkQuestionComplete,
 } from './components/PortalRenderer';
 import { GlobalSearchBar, GlobalSearchResultItem } from './components/GlobalSearchBar';
+import { LiveFormProgressBar } from './components/LiveFormProgressBar';
+import { computeLiveFormProgress } from './utils/formProgress';
 import { UploadedFileItem } from './components/DocumentUploadField';
 import {
   ActiveRecordState,
@@ -51,6 +57,7 @@ import {
   downloadAdmissionFormPdf,
 } from './utils/pdfGenerator';
 import { SaveShareModal, SavedFormSummary } from './components/SaveShareModal';
+import { VerificationCertificatePage } from './components/VerificationCertificatePage';
 
 const ANSWERS_STORAGE_KEY = 'nvea_current_form_answers_v1';
 const UPLOADED_FILES_STORAGE_KEY = 'nvea_current_uploaded_files_v1';
@@ -81,10 +88,23 @@ function saveLocalSavedFormsMap(map: Record<string, LocalSavedFormEntry>): void 
 
 /**
  * Synchronizes all 34 One-Way SOURCE -> TARGET mappings on initialization or form load,
+ * applies the 3 preselected dropdown defaults (Q.93 q90, Q.95 q92, Q.113 q110) when loading/initializing,
  * and cleans up any legacy invalid value on Q123 (Deponent's Sex).
  */
-function synchronizeMappedAnswers(raw: FormAnswers): FormAnswers {
+function synchronizeMappedAnswers(
+  raw: FormAnswers,
+  applyPreselectedDefaults = true
+): FormAnswers {
   const next: FormAnswers = { ...raw };
+
+  // Apply the 3 required preselected dropdown options on form load / reset (Updates 1, 2, 3)
+  if (applyPreselectedDefaults) {
+    for (const [qId, defaultOption] of Object.entries(PRESELECTED_DROPDOWN_DEFAULTS)) {
+      if (typeof next[qId] !== 'string' || next[qId].trim() === '') {
+        next[qId] = defaultOption;
+      }
+    }
+  }
 
   // Ensure Q123 only holds valid Deponent's Sex options ('Male' | 'Female' | 'Gay' | '')
   if (
@@ -103,11 +123,16 @@ function synchronizeMappedAnswers(raw: FormAnswers): FormAnswers {
   if (computed.q107 && !next.q107) next.q107 = computed.q107;
   if (computed.q117 && !next.q117) next.q117 = computed.q117;
 
-  // Apply all 34 SOURCE -> TARGET mappings where SOURCE has a value (or is explicitly present)
+  // Apply all SOURCE -> TARGET mappings where SOURCE has a value (or is explicitly present)
   for (const [sourceId, targetId] of Object.entries(SOURCE_TO_TARGET_MAP)) {
     if (sourceId in next) {
       next[targetId] = next[sourceId];
     }
+  }
+
+  // Apply Package Mode (id: q58) -> CLAP Segment (id: q150) mapping
+  if (typeof next.q58 === 'string' && next.q58 in PACKAGE_MODE_TO_CLAP_SEGMENT_MAP) {
+    next.q150 = PACKAGE_MODE_TO_CLAP_SEGMENT_MAP[next.q58];
   }
 
   return next;
@@ -153,15 +178,15 @@ export default function App() {
   // 3. Question Search / Jump filter (1 to 172)
   const [jumpQuery, setJumpQuery] = useState<string>('');
 
-  // 4. Form Answers State (persisted in localStorage for current draft)
+  // 4. Form Answers State (persisted in localStorage for current draft, with Q.93, Q.95, Q.113 preselected on load)
   const [answers, setAnswers] = useState<FormAnswers>(() => {
     try {
       const saved = localStorage.getItem(ANSWERS_STORAGE_KEY);
-      if (saved) return synchronizeMappedAnswers(JSON.parse(saved));
+      if (saved) return synchronizeMappedAnswers(JSON.parse(saved), true);
     } catch {
       // ignore
     }
-    return {};
+    return synchronizeMappedAnswers({}, true);
   });
 
   // 5. Uploaded Documents State (Full visual previews for Q76-Q89 & Q170)
@@ -192,6 +217,22 @@ export default function App() {
   const [savedFormsList, setSavedFormsList] = useState<SavedFormSummary[]>([]);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState<boolean>(false);
   const [actionBannerMsg, setActionBannerMsg] = useState<string>('');
+
+  // 9. Persistent Online/Offline Network Status Indicator powered by window.navigator.onLine
+  const [isOnline, setIsOnline] = useState<boolean>(() =>
+    typeof window !== 'undefined' ? window.navigator.onLine : true
+  );
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   // Initialize high-definition transparent PNG NVEA circular logo & Union Bank QR code
   useEffect(() => {
@@ -378,6 +419,14 @@ export default function App() {
         next[mappedTargetId] = value;
       }
 
+      // Strictly apply Package Mode (id: q58) -> CLAP Segment (id: q150) synchronization
+      if (questionId === 'q58') {
+        next.q150 =
+          typeof value === 'string' && value
+            ? PACKAGE_MODE_TO_CLAP_SEGMENT_MAP[value] || ''
+            : '';
+      }
+
       return next;
     });
   };
@@ -462,9 +511,9 @@ export default function App() {
     [requiredQuestions, effectiveAnswers, uploadedFiles]
   );
 
-  // Incomplete required questions prior to Point 170/171 (Questions 1 to 169)
+  // Incomplete required questions prior to Point 173/174 (Questions 1 to 172)
   const priorIncompleteCountForQ171 = useMemo(
-    () => incompleteRequiredQuestions.filter((q) => q.number < 170).length,
+    () => incompleteRequiredQuestions.filter((q) => q.number < 173).length,
     [incompleteRequiredQuestions]
   );
 
@@ -638,7 +687,7 @@ export default function App() {
         bankQrCardPng: assets.bankQrCardPng,
       });
       setActionBannerMsg(
-        `Downloaded NVEA_Admission_Form_${recordState.recordNumber}.pdf in strict sequential order (Questions 1–172).`
+        `Downloaded NVEA_Admission_Form_${recordState.recordNumber}.pdf in strict sequential order (Questions 1–175).`
       );
     } finally {
       setIsGeneratingPdf(false);
@@ -704,21 +753,28 @@ export default function App() {
     }
   };
 
-  const finalizeFormSubmission = (capturedIso?: string) => {
+  const finalizeFormSubmission = async (capturedIso?: string) => {
     const exactIsoTimestamp =
       capturedIso ||
       (typeof answers.submissionDate === 'string' && answers.submissionDate
         ? answers.submissionDate
         : new Date().toISOString());
     setShowSubmitWarning(false);
-    setAnswers((prev) => ({
-      ...prev,
+
+    const nextAnswers: FormAnswers = {
+      ...answers,
       submissionDate: exactIsoTimestamp,
-      q172: prev.q172 || 'Enrolment is done successfully',
-    }));
+      q172: answers.q172 || 'Enrolment is done successfully',
+    };
+    setAnswers(nextAnswers);
+
     const updatedRecord = markRecordSubmitted(recordState, exactIsoTimestamp);
     setRecordState(updatedRecord);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Save to server/localStorage
+    await handleSaveCurrentForm();
+    setActionBannerMsg('');
   };
 
   const handleSubmitForm = () => {
@@ -739,7 +795,7 @@ export default function App() {
   const handleStartNewApplication = () => {
     const nextRec = generateNextApplicationRecord();
     setRecordState(nextRec);
-    setAnswers({});
+    setAnswers(synchronizeMappedAnswers({}, true));
     setUploadedFiles({});
     setTouchedFields({});
     setShowSubmitWarning(false);
@@ -748,7 +804,7 @@ export default function App() {
   };
 
   const handleClearCurrentFields = () => {
-    setAnswers({});
+    setAnswers(synchronizeMappedAnswers({}, true));
     setUploadedFiles({});
     setTouchedFields({});
   };
@@ -764,8 +820,8 @@ export default function App() {
   const handleDownloadStandaloneHtml = () => {
     const prevMode = viewMode;
     setViewMode('all_compact');
-    setTimeout(() => {
-      downloadStandaloneHtmlSnapshot(recordState.recordNumber);
+    setTimeout(async () => {
+      await downloadStandaloneHtmlSnapshot(recordState.recordNumber);
       setViewMode(prevMode);
     }, 120);
   };
@@ -792,12 +848,12 @@ export default function App() {
   const handleJumpToQuestion = (e: React.FormEvent) => {
     e.preventDefault();
     const num = parseInt(jumpQuery.trim(), 10);
-    if (!isNaN(num) && num >= 1 && num <= 172) {
+    if (!isNaN(num) && num >= 1 && num <= 175) {
       jumpToQuestionByNumber(num);
     }
   };
 
-  // Count completed questions across all 172 questions
+  // Count completed questions across all 175 questions
   const completedCount = useMemo(() => {
     let count = 0;
     QUESTIONS.forEach((q) => {
@@ -808,10 +864,31 @@ export default function App() {
     return count;
   }, [effectiveAnswers, uploadedFiles]);
 
+  // Live Form Completion Progress Indicator state (Update 4)
+  const liveFormProgress = useMemo(
+    () => computeLiveFormProgress(effectiveAnswers, uploadedFiles),
+    [effectiveAnswers, uploadedFiles]
+  );
+
   const portalsToRender =
     viewMode === 'all_compact' || isPrinting
       ? PORTALS
       : PORTALS.filter((p) => p.id === activePortalId);
+
+  const searchParams =
+    typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const verifyRecordParam = searchParams?.get('verify')?.trim() || '';
+  const encodedVerifyDataParam = searchParams?.get('d') || null;
+
+  if (verifyRecordParam) {
+    return (
+      <VerificationCertificatePage
+        verifyRecordParam={verifyRecordParam}
+        encodedDataParam={encodedVerifyDataParam}
+        nveaLogoPng={assets.nveaCircularLogoPng}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen gov-bg-pattern flex flex-col">
@@ -832,17 +909,34 @@ export default function App() {
 
       {/* Top Bar Contract (3 Zones: Brand Title | Nav Links | Save, Download as PDF & Share Actions) */}
       <header className="bg-[#0F2942] text-white border-b-2 border-[#D97706] px-3 sm:px-4 lg:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3 no-print sticky top-0 z-40 shadow-sm">
-        {/* Zone 1: Single text element wordmark */}
-        <a
-          href="#top"
-          onClick={(e) => {
-            e.preventDefault();
-            handleSelectPortal(1);
-          }}
-          className="text-sm lg:text-base font-bold tracking-tight text-white whitespace-nowrap shrink-0"
-        >
-          NVEA Admission Portal
-        </a>
+        {/* Zone 1: Single text element wordmark + Persistent Online/Offline Status Indicator */}
+        <div className="flex items-center gap-2.5 shrink-0">
+          <a
+            href="#top"
+            onClick={(e) => {
+              e.preventDefault();
+              handleSelectPortal(1);
+            }}
+            className="text-sm lg:text-base font-bold tracking-tight text-white whitespace-nowrap"
+          >
+            NVEA Admission Portal
+          </a>
+          <span
+            className={`inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-semibold rounded-full select-none ${
+              isOnline
+                ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-500/40'
+                : 'bg-rose-950/80 text-rose-300 border border-rose-500/40'
+            }`}
+            title={isOnline ? 'Online - Internet connected' : 'Offline - Operating in local mode'}
+          >
+            <span
+              className={`w-2 h-2 rounded-full ${
+                isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-rose-500'
+              }`}
+            />
+            <span>{isOnline ? 'Online' : 'Offline'}</span>
+          </span>
+        </div>
 
         {/* Zone 2: 5 clean text navigation links */}
         <nav className="hidden xl:flex items-center gap-5 text-xs font-medium text-slate-200">
@@ -865,28 +959,28 @@ export default function App() {
               viewMode === 'all_compact' ? 'text-amber-300 underline underline-offset-4' : ''
             }`}
           >
-            Full Compact View (All 172 Qs)
+            Full Compact View (All 175 Qs)
           </button>
           <button
             type="button"
             onClick={() => handleSelectPortal(6)}
             className="hover:text-white transition-colors cursor-pointer whitespace-nowrap"
           >
-            Document Portal (Q.76–89)
+            Document Portal (Q.79–92)
           </button>
           <button
             type="button"
             onClick={() => handleSelectPortal(9)}
             className="hover:text-white transition-colors cursor-pointer whitespace-nowrap"
           >
-            Payment &amp; Bank QR (Q.108–117)
+            Payment &amp; Bank QR (Q.111–120)
           </button>
           <button
             type="button"
             onClick={() => handleSelectPortal(10)}
             className="hover:text-white transition-colors cursor-pointer whitespace-nowrap"
           >
-            Oath &amp; OTP Verification (Q.118–172)
+            Oath &amp; OTP Verification (Q.121–175)
           </button>
         </nav>
 
@@ -1215,6 +1309,11 @@ export default function App() {
           />
 
           {/* =====================================================================
+              LIVE FORM COMPLETION PROGRESS INDICATOR (Update 4)
+             ===================================================================== */}
+          <LiveFormProgressBar progress={liveFormProgress} />
+
+          {/* =====================================================================
               10-PORTAL NAVIGATION DIRECTORY & OPERATIONAL UTILITY BAR (Requirement 12)
              ===================================================================== */}
           <div className="bg-[#F1F5F9] border border-slate-300 rounded-sm p-2.5 mb-3 no-print">
@@ -1224,7 +1323,7 @@ export default function App() {
                   10-Portal Direct Navigation Menu:
                 </span>
                 <span className="font-mono-num font-semibold text-[#1E3A8A]">
-                  Filled: {completedCount} / 172
+                  Filled: {completedCount} / 175
                 </span>
                 <span aria-hidden="true">·</span>
                 {incompleteRequiredQuestions.length > 0 ? (
@@ -1272,10 +1371,10 @@ export default function App() {
                   <input
                     type="number"
                     min={1}
-                    max={172}
+                    max={175}
                     value={jumpQuery}
                     onChange={(e) => setJumpQuery(e.target.value)}
-                    placeholder="Jump to Q# (1-172)"
+                    placeholder="Jump to Q# (1-175)"
                     className="h-7 w-36 px-2 text-xs bg-white border border-slate-300 rounded-l-sm focus:outline-none focus:border-[#1E3A8A]"
                   />
                   <button
@@ -1421,10 +1520,10 @@ export default function App() {
             <div className="mt-4 bg-[#0F2942] text-white p-3.5 rounded-sm flex flex-wrap items-center justify-between gap-3 no-print">
               <div>
                 <p className="text-xs sm:text-sm font-bold">
-                  NVEA Official Admission Form (Portals 1–10 • Questions 1–172)
+                  NVEA Official Admission Form (Portals 1–10 • Questions 1–175)
                 </p>
                 <p className="text-[11px] text-slate-300 font-mono-num">
-                  Record Number: {recordState.recordNumber} • Filled: {completedCount}/172
+                  Record Number: {recordState.recordNumber} • Filled: {completedCount}/175
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
