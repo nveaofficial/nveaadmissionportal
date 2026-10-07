@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   Printer,
   FilePlus2,
@@ -58,10 +58,19 @@ import {
 } from './utils/pdfGenerator';
 import { SaveShareModal, SavedFormSummary } from './components/SaveShareModal';
 import { VerificationCertificatePage } from './components/VerificationCertificatePage';
+import { PWAInstallButton } from './components/PWAInstallButton';
+import { NetworkStatusToast } from './components/NetworkStatusToast';
+import {
+  enqueueSubmission,
+  getPendingQueueCount,
+  processBackgroundSyncQueue,
+} from './utils/offlineSyncQueue';
+import { playSuccessChime } from './utils/audioEffects';
 
 const ANSWERS_STORAGE_KEY = 'nvea_current_form_answers_v1';
 const UPLOADED_FILES_STORAGE_KEY = 'nvea_current_uploaded_files_v1';
 const LOCAL_SAVED_FORMS_MAP_KEY = 'nvea_saved_forms_map_v1';
+const LAST_AUTOSAVE_TIME_KEY = 'nvea_last_autosaved_time_v1';
 
 interface LocalSavedFormEntry extends SavedFormSummary {
   recordState: ActiveRecordState;
@@ -218,21 +227,30 @@ export default function App() {
   const [isGeneratingPdf, setIsGeneratingPdf] = useState<boolean>(false);
   const [actionBannerMsg, setActionBannerMsg] = useState<string>('');
 
-  // 9. Persistent Online/Offline Network Status Indicator powered by window.navigator.onLine
+  // 9. Persistent Online/Offline Network Status Indicator & IndexedDB Background Sync Queue
   const [isOnline, setIsOnline] = useState<boolean>(() =>
     typeof window !== 'undefined' ? window.navigator.onLine : true
   );
+  const [pendingSyncCount, setPendingSyncCount] = useState<number>(0);
+  const [lastSyncSummary, setLastSyncSummary] = useState<string | null>(null);
 
-  useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
+  // 10. 30-Second Draft Auto-Save Feature
+  const [lastAutoSaveTime, setLastAutoSaveTime] = useState<string>(() => {
+    try {
+      const savedIso = localStorage.getItem(LAST_AUTOSAVE_TIME_KEY);
+      if (savedIso) {
+        return new Date(savedIso).toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+        });
+      }
+    } catch {
+      // ignore
+    }
+    return '';
+  });
+  const [isAutoSavingDraft, setIsAutoSavingDraft] = useState<boolean>(false);
 
   // Initialize high-definition transparent PNG NVEA circular logo & Union Bank QR code
   useEffect(() => {
@@ -257,7 +275,15 @@ export default function App() {
 
   const effectiveAnswers: FormAnswers = answers;
 
-  // Persist current draft answers & uploaded files in localStorage
+  // Keep refs synchronized for the 30-second background interval timer
+  const answersRef = useRef(effectiveAnswers);
+  answersRef.current = effectiveAnswers;
+  const uploadedFilesRef = useRef(uploadedFiles);
+  uploadedFilesRef.current = uploadedFiles;
+  const recordStateRef = useRef(recordState);
+  recordStateRef.current = recordState;
+
+  // Persist current draft answers & uploaded files in localStorage on change
   useEffect(() => {
     try {
       localStorage.setItem(ANSWERS_STORAGE_KEY, JSON.stringify(effectiveAnswers));
@@ -273,6 +299,81 @@ export default function App() {
       // ignore quota errors
     }
   }, [uploadedFiles]);
+
+  // Periodic 30-Second Draft Auto-Save Interval to prevent data loss during long sessions
+  useEffect(() => {
+    const AUTO_SAVE_INTERVAL_MS = 30 * 1000; // 30 seconds
+
+    const performDraftAutoSave = () => {
+      setIsAutoSavingDraft(true);
+      try {
+        const curAnswers = answersRef.current;
+        const curUploads = uploadedFilesRef.current;
+        const curRecord = recordStateRef.current;
+        const now = new Date();
+        const nowIso = now.toISOString();
+
+        // 1. Snapshot form answers and uploaded files
+        localStorage.setItem(ANSWERS_STORAGE_KEY, JSON.stringify(curAnswers));
+        localStorage.setItem(UPLOADED_FILES_STORAGE_KEY, JSON.stringify(curUploads));
+        localStorage.setItem(LAST_AUTOSAVE_TIME_KEY, nowIso);
+
+        // 2. Also register draft in local saved forms map for session recovery
+        const applicantName =
+          (typeof curAnswers.q2 === 'string' && curAnswers.q2.trim()) ||
+          (typeof curAnswers.q119 === 'string' && curAnswers.q119.trim()) ||
+          'Draft Applicant';
+
+        const formId = curRecord.recordNumber;
+        const localMap = getLocalSavedFormsMap();
+        localMap[formId] = {
+          formId,
+          recordNumber: curRecord.recordNumber,
+          applicantName,
+          savedAt: nowIso,
+          submitted: curRecord.submitted,
+          submittedAt: curRecord.submittedAt,
+          recordState: curRecord,
+          answers: filterFilledAnswers(curAnswers),
+          uploadedFiles: filterFilledUploads(curUploads),
+        };
+        saveLocalSavedFormsMap(localMap);
+
+        const formattedTime = now.toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+        });
+        setLastAutoSaveTime(formattedTime);
+      } catch (err) {
+        console.warn('Draft auto-save notice:', err);
+      } finally {
+        setTimeout(() => {
+          setIsAutoSavingDraft(false);
+        }, 1200);
+      }
+    };
+
+    // Auto-save every 30 seconds
+    const intervalTimer = setInterval(performDraftAutoSave, AUTO_SAVE_INTERVAL_MS);
+
+    // Also auto-save on page unload
+    const handleBeforeUnload = () => {
+      try {
+        localStorage.setItem(ANSWERS_STORAGE_KEY, JSON.stringify(answersRef.current));
+        localStorage.setItem(UPLOADED_FILES_STORAGE_KEY, JSON.stringify(uploadedFilesRef.current));
+        localStorage.setItem(LAST_AUTOSAVE_TIME_KEY, new Date().toISOString());
+      } catch {
+        // ignore
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      clearInterval(intervalTimer);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
 
   // Refresh saved forms list from local storage + server
   const refreshSavedFormsList = useCallback(async () => {
@@ -312,6 +413,68 @@ export default function App() {
   useEffect(() => {
     refreshSavedFormsList();
   }, [refreshSavedFormsList]);
+
+  // Background sync processor for IndexedDB offline queue
+  const triggerBackgroundSync = useCallback(async () => {
+    try {
+      const res = await processBackgroundSyncQueue();
+      setPendingSyncCount(res.remaining);
+      if (res.synced > 0) {
+        setLastSyncSummary(
+          `Auto-synchronized ${res.synced} offline submission${res.synced > 1 ? 's' : ''} (${res.syncedRecords.join(', ')}) to server.`
+        );
+        await refreshSavedFormsList();
+      }
+    } catch {
+      // ignore transient network errors
+    }
+  }, [refreshSavedFormsList]);
+
+  // Initial check of pending queue count on app load
+  useEffect(() => {
+    getPendingQueueCount()
+      .then((count) => {
+        setPendingSyncCount(count);
+        if (count > 0 && typeof window !== 'undefined' && window.navigator.onLine) {
+          triggerBackgroundSync();
+        }
+      })
+      .catch(() => {});
+  }, [triggerBackgroundSync]);
+
+  // Automatically trigger sync when 'online' event is detected
+  useEffect(() => {
+    const handleOnline = async () => {
+      setIsOnline(true);
+      await triggerBackgroundSync();
+    };
+    const handleOffline = () => {
+      setIsOnline(false);
+      getPendingQueueCount().then(setPendingSyncCount).catch(() => {});
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [triggerBackgroundSync]);
+
+  // Listen to service worker background sync messages
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+      const handleSwMsg = (e: MessageEvent) => {
+        if (e.data?.type === 'NVEA_TRIGGER_BACKGROUND_SYNC') {
+          triggerBackgroundSync();
+        }
+      };
+      navigator.serviceWorker.addEventListener('message', handleSwMsg);
+      return () => {
+        navigator.serviceWorker.removeEventListener('message', handleSwMsg);
+      };
+    }
+  }, [triggerBackgroundSync]);
 
   // Load shared/saved form if ?formId=... is present in the URL
   useEffect(() => {
@@ -559,19 +722,43 @@ export default function App() {
     localMap[formId] = entry;
     saveLocalSavedFormsMap(localMap);
 
-    try {
-      await fetch('/api/forms/save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(entry),
-      });
-    } catch {
-      // local storage already saved
+    let serverSaved = false;
+    if (typeof window !== 'undefined' && window.navigator.onLine) {
+      try {
+        const res = await fetch('/api/forms/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(entry),
+        });
+        serverSaved = res.ok;
+      } catch {
+        serverSaved = false;
+      }
+    }
+
+    if (!serverSaved) {
+      try {
+        await enqueueSubmission(
+          entry,
+          typeof window !== 'undefined' && window.navigator.onLine
+            ? 'Server temporarily unavailable. Queued in IndexedDB.'
+            : 'Saved in offline mode. Queued in IndexedDB for auto-sync.'
+        );
+        const count = await getPendingQueueCount();
+        setPendingSyncCount(count);
+      } catch (err) {
+        console.warn('Could not queue in IndexedDB:', err);
+      }
+    } else {
+      const count = await getPendingQueueCount();
+      setPendingSyncCount(count);
     }
 
     await refreshSavedFormsList();
     setActionBannerMsg(
-      `Form ${recordState.recordNumber} saved! You can reopen and edit it anytime from the "Save" menu.`
+      !serverSaved
+        ? `Form ${recordState.recordNumber} safely stored in offline local storage & IndexedDB queue! It will automatically synchronize to the server as soon as you reconnect.`
+        : `Form ${recordState.recordNumber} saved! You can reopen and edit it anytime from the "Save" menu.`
     );
     return formId;
   }, [effectiveAnswers, recordState, uploadedFiles, refreshSavedFormsList]);
@@ -761,6 +948,9 @@ export default function App() {
         : new Date().toISOString());
     setShowSubmitWarning(false);
 
+    // Provide subtle, positive audio feedback upon successful submission
+    playSuccessChime();
+
     const nextAnswers: FormAnswers = {
       ...answers,
       submissionDate: exactIsoTimestamp,
@@ -935,6 +1125,14 @@ export default function App() {
               }`}
             />
             <span>{isOnline ? 'Online' : 'Offline'}</span>
+            {pendingSyncCount > 0 && (
+              <span
+                className="ml-0.5 px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-amber-500/30 text-amber-300 border border-amber-400/50"
+                title={`${pendingSyncCount} offline submission(s) queued in IndexedDB for auto-sync`}
+              >
+                {pendingSyncCount} Queued
+              </span>
+            )}
           </span>
         </div>
 
@@ -986,6 +1184,27 @@ export default function App() {
 
         {/* Zone 3: Mandatory Functional Action Buttons: Save, Download as PDF, Share & Print */}
         <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 shrink-0">
+          <PWAInstallButton />
+
+          {/* 30-Second Draft Auto-Save Status Indicator */}
+          <div
+            className="hidden md:inline-flex items-center gap-1.5 px-2 py-1 text-[11px] font-medium text-slate-300 bg-slate-800/80 border border-slate-700/60 rounded-xs select-none"
+            title="Draft Auto-Save: Form state is automatically saved to local storage every 30 seconds"
+          >
+            {isAutoSavingDraft ? (
+              <RefreshCw className="w-3 h-3 text-amber-400 animate-spin shrink-0" />
+            ) : (
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+            )}
+            <span className="whitespace-nowrap">
+              {isAutoSavingDraft
+                ? 'Auto-saving...'
+                : lastAutoSaveTime
+                ? `Saved ${lastAutoSaveTime}`
+                : 'Auto-save (30s)'}
+            </span>
+          </div>
+
           <button
             type="button"
             onClick={async () => {
@@ -1632,6 +1851,14 @@ export default function App() {
         assets={assets}
         onUpdateAsset={handleUpdateCustomAsset}
         onResetDefaults={handleResetDefaultAssets}
+      />
+
+      {/* Subtle, non-blocking toast for Offline mode and Reconnection confirmation */}
+      <NetworkStatusToast
+        isOnline={isOnline}
+        pendingSyncCount={pendingSyncCount}
+        onTriggerSync={triggerBackgroundSync}
+        lastSyncSummary={lastSyncSummary}
       />
     </div>
   );

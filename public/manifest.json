@@ -1,0 +1,32 @@
+{
+  "id": "/",
+  "name": "NVEA Online Admission Portal",
+  "short_name": "NVEA Portal",
+  "description": "NVEA's Official Admission Portal for prospective students to apply for enrollment and track their application status online.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#0F2942",
+  "background_color": "#0F2942",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
